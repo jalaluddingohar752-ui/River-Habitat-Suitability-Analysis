@@ -6,7 +6,7 @@ Key Features
 
 🌊 Network topology-aware - Explores all possible paths through branching river systems
 🌲 Fragmented habitat handling - Correctly sums non-contiguous forest patches
-⚡ High-performance - Processes 27K+ nodes in under 30 seconds
+⚡ High-performance - Processes 27K+ nodes in 8 minutes
 🎯 Accurate - Identified 64,889 suitable stretches vs 422 with linear sampling
 
 
