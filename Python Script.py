@@ -10,24 +10,17 @@ print("=" * 80)
 print("GEOARCHITECT: River Habitat Suitability Analysis (OPTIMIZED)")
 print("=" * 80)
 
-# ============================================================================
-# CONFIGURATION
-# ============================================================================
 SEGMENT_LENGTH = 4000      # 4km in meters
 SAMPLE_INTERVAL = 50       # Create segments every 50m for maximum coverage
 FOREST_BUFFER = 20         # 20m buffer on forest polygons
 MIN_FOREST_LENGTH = 1900   # 1.9km minimum forest requirement
 OUTPUT_PATH = "D:/CI-Archified/Fiver/Tesing Output/"
 
-# Create output directory if it doesn't exist
 import os
 if not os.path.exists(OUTPUT_PATH):
     os.makedirs(OUTPUT_PATH)
     print(f"Created output directory: {OUTPUT_PATH}")
 
-# ============================================================================
-# STEP 1: Get Input Layers
-# ============================================================================
 print("\n[1/5] Loading input layers...")
 
 try:
@@ -39,22 +32,18 @@ except IndexError:
     print("ERROR: Layers not found! Ensure 'Freshwater lines merged' and 'Deciduous forest' are loaded.")
     raise
 
-# ============================================================================
-# STEP 2: Buffer Forest by 20m
-# ============================================================================
 print(f"\n[2/5] Buffering forest by {FOREST_BUFFER}m...")
 
 buffered_forest = processing.run("native:buffer", {
     'INPUT': forest_layer,
     'DISTANCE': FOREST_BUFFER,
     'SEGMENTS': 5,
-    'DISSOLVE': True,  # Merge all forest into one geometry for faster processing
+    'DISSOLVE': True, 
     'OUTPUT': 'memory:'
 })['OUTPUT']
 
 print(f"✓ Forest buffered and dissolved")
 
-# Get buffered forest as single geometry
 forest_geoms = [f.geometry() for f in buffered_forest.getFeatures()]
 if forest_geoms:
     buffered_forest_geom = QgsGeometry.unaryUnion(forest_geoms)
@@ -63,12 +52,8 @@ else:
     print("ERROR: No forest geometry found!")
     raise ValueError("Empty forest layer")
 
-# ============================================================================
-# STEP 3: Generate 4km Segments (Linear Sampling)
-# ============================================================================
 print(f"\n[3/5] Generating 4km segments every {SAMPLE_INTERVAL}m (high density)...")
 
-# Setup output fields
 segment_fields = QgsFields()
 segment_fields.append(QgsField('seg_id', QVariant.Int))
 segment_fields.append(QgsField('start_m', QVariant.Double))
@@ -198,9 +183,6 @@ QgsVectorFileWriter.writeAsVectorFormat(
 )
 print(f"✓ Saved: {all_segments_output}")
 
-# ============================================================================
-# STEP 5: Create Filtered Layer (Only Suitable Segments)
-# ============================================================================
 print(f"\n[5/5] Creating suitable-only layer...")
 
 # Filter for suitable segments
@@ -226,9 +208,6 @@ print(f"✓ Saved: {suitable_output}")
 QgsProject.instance().addMapLayer(results_layer)
 QgsProject.instance().addMapLayer(suitable_layer)
 
-# ============================================================================
-# SUMMARY
-# ============================================================================
 print("\n" + "=" * 80)
 print("ANALYSIS COMPLETE!")
 print("=" * 80)
@@ -238,4 +217,5 @@ print(f"Success rate: {round(suitable_count/total_segments*100, 1) if total_segm
 print(f"\nOutput files:")
 print(f"  1. {all_segments_output} (all segments)")
 print(f"  2. {suitable_output} (suitable segments only)")
+
 print("=" * 80)
